@@ -1,0 +1,42 @@
+pc@SALMA MINGW64 /c/nawxampp/htdocs/gestionuniversité/.github/workflows (master)
+$ pwd
+/c/nawxampp/htdocs/gestionuniversité/.github/workflows
+
+pc@SALMA MINGW64 /c/nawxampp/htdocs/gestionuniversité/.github/workflows (master)
+$ nano main.yml
+
+pc@SALMA MINGW64 /c/nawxampp/htdocs/gestionuniversité/.github/workflows (master)
+$ ls
+main.yml
+
+pc@SALMA MINGW64 /c/nawxampp/htdocs/gestionuniversité/.github/workflows (master)
+$ cat main.yml
+name: CI Pipeline
+on:
+   push:
+    branches:
+      - main
+   pull_request:
+    branches:
+     - main
+jobs;
+  build:
+    runs-on:ubuntu-latest
+
+    steps:
+      - name:checkout du code
+        uses:actions/checkout@v4
+      - name:confuguration de Node.js
+        uses:actions/setup-node@v4
+        with:
+          node-version:'20'
+      - name: Installation des dépendances
+        run: npm install
+
+      - name: lancement des tests
+        run: npm test
+      - name: Fin de la pipeline
+        run: echo "la pipeline s'est exécuté avec succes!"
+
+pc@SALMA MINGW64 /c/nawxampp/htdocs/gestionuniversité/.github/workflows (master)
+$

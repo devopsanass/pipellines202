@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+    environment {
+        GIT_CREDENTIALS = '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'        // Token GitHub
+        SONARQUBE_CREDENTIALS = 'sqa_e37d0938c241aae4704f1c9100667a8ebff634ab' // Token SonarQube
+    }
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo 'Cloning repository from GitHub...'
+                git branch: 'main',
+                    credentialsId: "${GIT_CREDENTIALS}",
+                    url: 'https://github.com/AminaMesrar/learn-jenkins-app.git'
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                echo 'Installing dependencies...'
+                bat 'npm install'
+            }
+        }
+        
+        stage('Run Tests') {
+            steps {
+                echo 'Running tests and generating coverage...'
+                bat 'npm test'
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube-Server') {
+                    script {
+                        def scannerHome = tool name: 'sonarqube-scanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
+                        bat """
+                            "${scannerHome}\\bin\\sonar-scanner.bat" ^
+                            -Dsonar.projectKey=my-react-app ^
+                            -Dsonar.host.url=http://127.0.0.1:9000 ^
+                            -Dsonar.login=${SONARQUBE_CREDENTIALS} ^
+                            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info ^
+                            -Dsonar.exclusions=/node_modules/,/public/,/test/**
+                        """
+                    }
+                }
+            }
+        }
+        
+        stage('Build Application') {
+            steps {
+                echo 'Building the React application...'
+                bat 'npm run build'
+            }
+        }
+        
+        stage('Deploy Application') {
+            steps {
+                echo 'Deploying the React application...'
+                bat 'if not exist C:\\TP\\react-app mkdir C:\\TP\\react-app'
+                bat 'xcopy /E /I build\\* C:\\TP\\react-app\\'
+            }
+        }
+        
+        stage('Run Application') {
+            steps {
+                echo 'Running the React application (serve build)...'
+                bat 'npx serve -s build -l 3000'
+            }
+        }
+    }
+    post {
+        always {
+            echo 'Pipeline completed!'
+        }
+        failure {
+            echo 'Pipeline failed. Please check the logs for more details.'
+        }
+    }
+}
